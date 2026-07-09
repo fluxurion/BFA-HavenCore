@@ -1,0 +1,96 @@
+services:
+  mysql:
+    container_name: bfacore-mysql
+    image: mysql:8.4
+    restart: unless-stopped
+    command: ["--max_allowed_packet=1073741824", "--wait_timeout=28800"]
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-admin}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_ROOT_PASSWORD:-admin}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  # Importa los dumps SQL base (auth/world/characters/hotfixes) que TENES que
+  # descargar aparte (no vienen en el repo, ver docker/README.md) y colocar
+  # en ./sql/base/*.sql antes de correr esto.
+  #   docker compose run --rm db-import
+  db-import:
+    container_name: bfacore-db-import
+    image: mysql:8.4
+    profiles: ["tools"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-admin}
+    volumes:
+      - ./sql/base:/sql/base:ro
+      - ./docker/db-import.sh:/db-import.sh:ro
+    entrypoint: ["bash", "/db-import.sh"]
+
+  bnetserver:
+    container_name: bfacore-bnetserver
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: runtime
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASS: ${DB_ROOT_PASSWORD:-admin}
+    volumes:
+      - bnetserver_etc:/opt/bfacore/etc
+    entrypoint: ["/opt/bfacore/entrypoint.sh", "bnetserver"]
+    ports:
+      - "1119:1119"
+      - "8081:8081"
+
+  worldserver:
+    container_name: bfacore-worldserver
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: runtime
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASS: ${DB_ROOT_PASSWORD:-admin}
+    volumes:
+      - worldserver_etc:/opt/bfacore/etc
+      # Datos extraidos del cliente (dbc/maps/vmaps/mmaps). Ver docker/README.md.
+      - ./client-data:/opt/bfacore/bin/ClientData:ro
+    entrypoint: ["/opt/bfacore/entrypoint.sh", "worldserver"]
+    ports:
+      - "8085:8085"
+      # InstanceServerPort (World.cpp, default 8086): puerto separado que
+      # usa el hand-off de "Enter World" (WorldSession::SendConnectToInstance).
+      # Sin publicarlo, el cliente entra a character select bien pero al
+      # entrar al mundo el 2do connect falla y muestra "World server is down".
+      - "8086:8086"
+    # stdin_open sin tty: permite mandar comandos a la consola con
+    # `docker attach` + stdin canalizado (con tty:true Docker rechaza el
+    # attach si stdin no es un terminal interactivo).
+    stdin_open: true
+    tty: false
+
+volumes:
+  mysql_data:
+  bnetserver_etc:
+  worldserver_etc:

@@ -1,0 +1,5 @@
+.git
+docker/build*.log
+sql/base/*.sql
+sql/base/*.rar
+client-data/

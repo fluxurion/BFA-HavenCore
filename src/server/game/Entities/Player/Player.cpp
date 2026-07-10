@@ -27497,8 +27497,7 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot, AELootResult* aeResult/* 
         SendEquipError(msg, nullptr, nullptr, item->itemid);
 }
 
-/* "Clean up bags" function on backbag */
-/*void Player::ApplyOnItems(uint8 type, std::function<bool(Player*, Item*, uint8, uint8)>&& function)
+void Player::ApplyOnItems(uint8 type, std::function<bool(Player*, Item*, uint8, uint8)>&& function)
 {
     switch (type)
     {
@@ -27543,7 +27542,7 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot, AELootResult* aeResult/* 
     default:
         break;
     }
-}*/
+}
 
 void Player::LearnSpellHighestRank(uint32 spellid)
 {

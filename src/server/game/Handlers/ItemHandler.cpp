@@ -1196,8 +1196,7 @@ void WorldSession::HandleUseCritterItem(WorldPackets::Item::UseCritterItem& useC
     _player->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
 }
 
-/* "Clean up bags" function on backbag */
-/*bool StoreItemAndStack(Player* player, Item* item, uint8 bagSlot)
+bool StoreItemAndStack(Player* player, Item* item, uint8 bagSlot)
 {
     ItemPosCountVec dest;
     if (player->CanStoreItem(bagSlot, NULL_SLOT, dest, item, false) == EQUIP_ERR_OK && !(dest.size() == 1 && dest[0].pos == item->GetPos()))
@@ -1242,14 +1241,13 @@ void StoreItemInBanks(Player* player, Item* item)
         if (BankItemAndStack(player, item, i))
             break;
 }
-*/
+
 
 void WorldSession::HandleSortBags(WorldPackets::Item::SortBags& /*sortBags*/)
 {
     SendPacket(WorldPackets::Item::BagCleanupFinished().Write());
 
-    /* "Clean up bags" function on backbag */
-/*
+
     _player->ApplyOnItems(1, [](Player* player, Item* item, uint8, uint8)
         {
             StoreItemInBags(player, item);
@@ -1288,15 +1286,13 @@ void WorldSession::HandleSortBags(WorldPackets::Item::SortBags& /*sortBags*/)
 
             return true;
         });
-*/
+
 }
 
 void WorldSession::HandleSortBankBags(WorldPackets::Item::SortBankBags& /*sortBankBags*/)
 {
     SendPacket(WorldPackets::Item::BagCleanupFinished().Write());
 
-    /* "Clean up bags" function on backbag */
-/*
     _player->ApplyOnItems(2, [](Player* player, Item* item, uint8, uint8)
         {
             StoreItemInBanks(player, item);
@@ -1335,15 +1331,13 @@ void WorldSession::HandleSortBankBags(WorldPackets::Item::SortBankBags& /*sortBa
 
             return true;
         });
-*/
+
 }
 
 void WorldSession::HandleSortReagentBankBags(WorldPackets::Item::SortReagentBankBags& /*sortReagentBankBags*/)
 {
     SendPacket(WorldPackets::Item::BagCleanupFinished().Write());
 
-    /* "Clean up bags" function on backbag */
-/*
     _player->ApplyOnItems(3, [](Player* player, Item* item, uint8, uint8)
         {
             StoreItemInBanks(player, item);
@@ -1379,7 +1373,7 @@ void WorldSession::HandleSortReagentBankBags(WorldPackets::Item::SortReagentBank
 
             return true;
         });
-*/
+
 }
 
 void WorldSession::HandleRemoveNewItem(WorldPackets::Item::RemoveNewItem& removeNewItem)

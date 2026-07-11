@@ -1,0 +1,23 @@
+-- EN: "Between Us and Freedom" (Bastillax) existed as 4 separate quest_template rows
+-- (39688/39694/40255/40256, identical title/objective, two spec pairs distinguished only
+-- by RewardDisplaySpell1: 198589 for Havoc, 185245 for Vengeance) all offered directly by
+-- creature_queststarter from npc 97644 (Kor'vas Bloodthorn) with no spec filter, so the
+-- client listed all 4 as separately acceptable and nothing stopped a player from taking
+-- more than one - seen as a duplicated quest with two different rewards. Fixed in C++
+-- (npc_97644::OnQuestReward, zone_vault_of_wardens.cpp) by detecting the player's spec
+-- and granting only the correct variant when the prerequisite quest 40373 "Pool of
+-- Judgements" is turned in. This removes the DB-side offer so it can't be double-accepted.
+--
+-- ES: "Between Us and Freedom" (Bastillax) existia como 4 filas separadas de
+-- quest_template (39688/39694/40255/40256, mismo titulo/objetivo, dos pares por
+-- especializacion distinguidos solo por RewardDisplaySpell1: 198589 Havoc, 185245
+-- Vengeance) ofrecidas directamente por creature_queststarter desde el npc 97644 (Kor'vas
+-- Bloodthorn) sin ningun filtro de spec, asi que el cliente las listaba las 4 como
+-- aceptables por separado y nada impedia tomar mas de una - se veia como una quest
+-- duplicada con dos recompensas distintas. Se arreglo en C++
+-- (npc_97644::OnQuestReward, zone_vault_of_wardens.cpp) detectando la especializacion del
+-- jugador y otorgando solo la variante correcta al entregar la quest prerequisito 40373
+-- "Pool of Judgements". Esto saca la oferta del lado de la base para que no se pueda
+-- aceptar dos veces.
+
+DELETE FROM `creature_queststarter` WHERE `quest` IN (39688, 39694, 40255, 40256) AND `id` = 97644;

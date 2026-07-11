@@ -1,0 +1,28 @@
+-- EN: Fix follow-up to 2026_07_10_04.sql. That update set a NEGATIVE shared ExclusiveGroup
+-- (-39688) on the two "Between Us and Freedom" variants (39688 Havoc, 40255 Vengeance) as a
+-- safety net against the client offering/accepting both. It never actually worked:
+-- Player::SatisfyQuestExclusiveGroup (Player.cpp) starts with
+-- `if (qInfo->GetExclusiveGroup() <= 0) return true;` - i.e. non-positive ExclusiveGroup
+-- values are a no-op in this engine, exclusivity only applies for values > 0. Symptom: once
+-- a player had accepted one spec variant, npc_97644::OnGossipHello's own eligibility check
+-- correctly stopped offering it again, but talking to the NPC fell through to the default
+-- engine gossip flow (since the custom check failed), which - with ExclusiveGroup silently
+-- disabled - still listed and allowed accepting the OTHER spec's variant too, one at a time
+-- instead of both at once, but still a duplicate over two separate visits. Fixed by using a
+-- positive shared value (39688, the lower quest ID) instead.
+--
+-- ES: Fix de seguimiento a 2026_07_10_04.sql. Esa actualizacion le puso un ExclusiveGroup
+-- compartido NEGATIVO (-39688) a las dos variantes de "Between Us and Freedom" (39688 Havoc,
+-- 40255 Vengeance) como red de seguridad contra que el cliente ofreciera/aceptara las dos.
+-- Nunca funciono en realidad: Player::SatisfyQuestExclusiveGroup (Player.cpp) arranca con
+-- `if (qInfo->GetExclusiveGroup() <= 0) return true;` - o sea, los valores de ExclusiveGroup
+-- no positivos no hacen nada en este motor, la exclusividad solo aplica con valores > 0.
+-- Sintoma: una vez que el jugador aceptaba una variante, el chequeo propio de
+-- npc_97644::OnGossipHello correctamente dejaba de ofrecerla de nuevo, pero al hablar con el
+-- NPC caia al flujo de gossip por defecto del motor (porque el chequeo propio fallaba), que -
+-- con el ExclusiveGroup desactivado en silencio - igual listaba y dejaba aceptar la variante
+-- de la OTRA especializacion, de a una en vez de las dos juntas, pero seguia siendo un
+-- duplicado repartido en dos visitas. Se arreglo usando un valor compartido positivo (39688,
+-- la quest ID mas baja) en vez de negativo.
+
+UPDATE `quest_template_addon` SET `ExclusiveGroup` = 39688 WHERE `ID` IN (39688, 40255);

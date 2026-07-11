@@ -1,0 +1,25 @@
+-- EN: Fix corrupted AllowableRaces bitmask on all 4 "Between Us and Freedom" quest_template
+-- rows (39688/39694/40255/40256). The bitmask included Night Elf but NOT Blood Elf - one of
+-- the two valid Demon Hunter races - so a Blood Elf demon hunter got "That quest is not
+-- available to your race" when accepting through the native quest-giver flow. This bug was
+-- invisible before because the quest used to be granted via a silent Player::AddQuest() call
+-- (see zone_vault_of_wardens.cpp, npc_97644), which bypasses CanTakeQuest() eligibility
+-- checks entirely; switching to the native accept flow (so the real Accept/Decline popup and
+-- reward preview show up) properly enforces it, exposing the bad data. Set to the same
+-- "all races" sentinel already used by the rest of this quest chain (39683, 40373) - class
+-- eligibility is already enforced by the chain itself, so race doesn't need its own filter.
+--
+-- ES: Corrige el bitmask corrupto de AllowableRaces en las 4 filas de quest_template de
+-- "Between Us and Freedom" (39688/39694/40255/40256). El bitmask incluia Elfo de la Noche
+-- pero NO Elfo de Sangre - una de las dos razas validas para Demon Hunter -, asi que un
+-- demon hunter Elfo de Sangre recibia "That quest is not available to your race" al
+-- aceptarla por el flujo nativo de quest giver. Este bug estaba invisible antes porque la
+-- quest se otorgaba con un Player::AddQuest() silencioso (ver zone_vault_of_wardens.cpp,
+-- npc_97644), que se salta por completo los chequeos de elegibilidad de CanTakeQuest();
+-- al pasar al flujo nativo de aceptar (para que se vea el popup real de Aceptar/Rechazar y
+-- la vista previa de recompensa) se empezo a validar de verdad, exponiendo el dato malo. Se
+-- deja el mismo valor "todas las razas" que ya usa el resto de esta cadena de quests (39683,
+-- 40373) - la elegibilidad de clase ya la garantiza la cadena en si, asi que no hace falta
+-- un filtro de raza propio.
+
+UPDATE `quest_template` SET `AllowableRaces` = 18446744073709551615 WHERE `ID` IN (39688, 39694, 40255, 40256);
